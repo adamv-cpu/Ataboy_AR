@@ -8,7 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      body { margin: 0; overflow: hidden; }
+      /* Keep it simple to prevent blocking the camera feed */
+      body { margin: 0; overflow: hidden; background-color: transparent; }
     </style>
   </head>
 
@@ -35,6 +36,7 @@
       const video = document.querySelector('#posterVideo');
       const targetEntity = document.querySelector('[mindar-image-target]');
 
+      // Play when found, pause when lost
       targetEntity.addEventListener("targetFound", () => {
         video.play();
       });
