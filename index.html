@@ -1,82 +1,67 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Forever Free AR Poster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ataboy AR Poster</title>
     
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
+
     <style>
+      /* Fixes the "white screen" issue and forces camera to be full screen */
       body { margin: 0; overflow: hidden; }
+      
+      /* Standard loading screen styles */
       #scanning-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.7); color: white;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        z-index: 99; font-family: sans-serif; text-align: center; padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background: transparent;
+        z-index: 2;
       }
-      .hidden { display: none !important; }
+      #scanning-overlay.hidden { display: none; }
     </style>
   </head>
+
   <body>
-
-    <div id="scanning-overlay">
-      <p>Allow camera access if asked.</p>
-      <p><b>Point your phone at the poster!</b></p>
-    </div>
-
     <a-scene 
-  mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; showStats: false; uiScanning: no;" 
-  embedded 
-  color-space="sRGB" 
-  renderer="colorManagement: true, physicallyCorrectLights" 
-  vr-mode-ui="enabled: false" 
-  device-orientation-permission-ui="enabled: false">
-      
+      mindar-image="imageTargetSrc: ./targets.mind; showStats: false; autoStart: true; filterMinCF: 0.001; filterBeta: 1000;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+
       <a-assets>
-        <video id="posterVideo" 
-               src="./Ataboy_Poster.mp4" 
-               preload="auto" 
-               loop="true" 
-               muted 
-               crossorigin="anonymous" 
-               webkit-playsinline 
-               playsinline>
-        </video>
+        <video id="posterVideo" src="./poster-animation.mp4" preload="auto" loop="true" response-type="arraybuffer" crossorigin="anonymous" webkit-playsinline playsinline muted></video>
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: ${customFields.libAFRAME.far}; objects: .clickable"></a-camera>
 
-      <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-        <a-video id="ar-video-display" src="#posterVideo" width="1" height="1.5" position="0 0 0"></a-video>
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video id="ar-video" src="#posterVideo" width="1" height="1.5" position="0 0 0.01"></a-video>
       </a-entity>
     </a-scene>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const targetEl = document.querySelector('#ar-target');
-        const video = document.querySelector('#posterVideo');
-        const overlay = document.querySelector('#scanning-overlay');
+      // Automatically play the video when the poster is found
+      const sceneEl = document.querySelector('a-scene');
+      const video = document.querySelector('#posterVideo');
+      const targetEntity = document.querySelector('[mindar-image-target]');
 
-        // Play video when poster is found
-        targetEl.addEventListener("targetFound", () => {
-          overlay.classList.add("hidden");
-          video.play();
-        });
+      targetEntity.addEventListener("targetFound", event => {
+        console.log("Poster found");
+        video.play();
+      });
 
-        // Pause video when user looks away to save battery/performance
-        targetEl.addEventListener("targetLost", () => {
-          video.pause();
-        });
+      targetEntity.addEventListener("targetLost", event => {
+        console.log("Poster lost");
+        video.pause();
       });
     </script>
   </body>
-
 </html>
-
-
-
-
-
-
