@@ -1,36 +1,41 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Ataboy AR Poster</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ataboy AR Fullscreen</title>
     
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      /* Fixes the "white screen" issue and forces camera to be full screen */
-      body { margin: 0; overflow: hidden; }
-      
-      /* Standard loading screen styles */
-      #scanning-overlay {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: fixed;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        background: transparent;
-        z-index: 2;
+      /* This is the magic fix for the "Video at top / White at bottom" issue */
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        height: -webkit-fill-available; /* Specifically for mobile Safari/Chrome */
+        overflow: hidden;
+        background-color: black; /* Prevents white flashes */
       }
-      #scanning-overlay.hidden { display: none; }
+
+      /* Forces the AR engine to use every pixel available */
+      a-scene {
+        width: 100vw;
+        height: 100vh;
+        height: -webkit-fill-available;
+      }
+
+      /* Hides any accidental text from the stats/debug info */
+      .mindar-ui-overlay {
+        display: none !important;
+      }
     </style>
   </head>
 
   <body>
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind; showStats: false; autoStart: true; filterMinCF: 0.001; filterBeta: 1000;" 
+      mindar-image="imageTargetSrc: ./targets.mind; showStats: false; autoStart: true; uiScanning: no; filterMinCF: 0.001; filterBeta: 1000;" 
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
@@ -40,7 +45,7 @@
         <video id="posterVideo" src="./poster-animation.mp4" preload="auto" loop="true" response-type="arraybuffer" crossorigin="anonymous" webkit-playsinline playsinline muted></video>
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: ${customFields.libAFRAME.far}; objects: .clickable"></a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
         <a-video id="ar-video" src="#posterVideo" width="1" height="1.5" position="0 0 0.01"></a-video>
@@ -48,18 +53,15 @@
     </a-scene>
 
     <script>
-      // Automatically play the video when the poster is found
-      const sceneEl = document.querySelector('a-scene');
       const video = document.querySelector('#posterVideo');
       const targetEntity = document.querySelector('[mindar-image-target]');
 
-      targetEntity.addEventListener("targetFound", event => {
-        console.log("Poster found");
-        video.play();
+      // Robust play/pause logic
+      targetEntity.addEventListener("targetFound", () => {
+        video.play().catch(e => console.log("Autoplay blocked:", e));
       });
 
-      targetEntity.addEventListener("targetLost", event => {
-        console.log("Poster lost");
+      targetEntity.addEventListener("targetLost", () => {
         video.pause();
       });
     </script>
