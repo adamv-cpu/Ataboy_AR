@@ -1,41 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Ataboy AR Fullscreen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ataboy AR</title>
     
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <style>
-      /* This is the magic fix for the "Video at top / White at bottom" issue */
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        height: -webkit-fill-available; /* Specifically for mobile Safari/Chrome */
-        overflow: hidden;
-        background-color: black; /* Prevents white flashes */
-      }
-
-      /* Forces the AR engine to use every pixel available */
-      a-scene {
-        width: 100vw;
-        height: 100vh;
-        height: -webkit-fill-available;
-      }
-
-      /* Hides any accidental text from the stats/debug info */
-      .mindar-ui-overlay {
-        display: none !important;
-      }
+      body { margin: 0; overflow: hidden; }
     </style>
   </head>
 
   <body>
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind; showStats: false; autoStart: true; uiScanning: no; filterMinCF: 0.001; filterBeta: 1000;" 
+      mindar-image="imageTargetSrc: ./targets.mind; showStats: false; autoStart: true; filterMinCF: 0.001; filterBeta: 1000;" 
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
@@ -48,7 +27,7 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-video id="ar-video" src="#posterVideo" width="1" height="1.5" position="0 0 0.01"></a-video>
+        <a-video src="#posterVideo" width="1" height="1.5" position="0 0 0.01"></a-video>
       </a-entity>
     </a-scene>
 
@@ -56,9 +35,8 @@
       const video = document.querySelector('#posterVideo');
       const targetEntity = document.querySelector('[mindar-image-target]');
 
-      // Robust play/pause logic
       targetEntity.addEventListener("targetFound", () => {
-        video.play().catch(e => console.log("Autoplay blocked:", e));
+        video.play();
       });
 
       targetEntity.addEventListener("targetLost", () => {
